@@ -1,6 +1,6 @@
 import { Post } from '../api/types';
 import fetchPosts from "../api/fetchPosts";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import React from 'react';
 
 const PostList = () => {
@@ -24,15 +24,26 @@ const PostList = () => {
     loadPosts();
   }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setSelectedPost(null);
-  };
+  }, []);
 
-  const handleOutsideClick = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleOutsideClick = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
       closeModal();
     }
-  };
+  }, [closeModal]);
+
+  const postList = useMemo(() => posts.map((post) => (
+    <div
+      className="w-72 bg-white shadow-md rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-shadow cursor-pointer"
+      key={post.id}
+      onClick={() => setSelectedPost(post)}
+    >
+      <h3 className="text-lg font-bold text-gray-800 mb-2">Post №{post.id}</h3>
+      <p className="text-sm text-blue-600">Click to view details</p>
+    </div>
+  )), [posts]);
 
   if (loading) {
     return (
@@ -54,17 +65,8 @@ const PostList = () => {
     <div className="relative">
       {!selectedPost ? (
         <div className="flex flex-wrap justify-center gap-6 p-8 bg-gray-100">
-        {posts.map((post) => (
-          <div
-            className="w-72 bg-white shadow-md rounded-lg border border-gray-200 p-4 hover:shadow-lg transition-shadow cursor-pointer"
-            key={post.id}
-            onClick={() => setSelectedPost(post)}
-          >
-            <h3 className="text-lg font-bold text-gray-800 mb-2">Post №{post.id}</h3>
-            <p className="text-sm text-blue-600">Click to view details</p>
-          </div>
-        ))}
-      </div>
+          {postList}
+        </div>
       ) : (
         <div
           className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
